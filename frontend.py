@@ -1,79 +1,63 @@
 import streamlit as st
-from app.main import graph
-from langchain.messages import HumanMessage
 import uuid
+from langchain.messages import HumanMessage
+from app.main import graph, retrieve_all_thread, load_chat_history
 
 
 # -----------------------
 # Helpers
 # -----------------------
-def genrate_id():
+def generate_id():
     return str(uuid.uuid4())
 
 
 def add_thread(thread_id):
     if thread_id not in st.session_state["chat_thread"]:
-        # newest chat on top
         st.session_state["chat_thread"].insert(0, thread_id)
 
 
 def reset_chat():
-    thread_id = genrate_id()
+    thread_id = generate_id()
     st.session_state["thread_id"] = thread_id
     add_thread(thread_id)
 
-    if thread_id not in st.session_state["chat_histories"]:
-        st.session_state["chat_histories"][thread_id] = []
 
+def delete_thread_local(thread_id):
+    """Only removes from sidebar UI (DB deletion handled separately if needed)"""
 
-def delete_thread(thread_id):
-    # remove history
-    if thread_id in st.session_state["chat_histories"]:
-        del st.session_state["chat_histories"][thread_id]
-
-    # remove from sidebar
     if thread_id in st.session_state["chat_thread"]:
         st.session_state["chat_thread"].remove(thread_id)
 
-    # if current chat deleted → switch
     if st.session_state["thread_id"] == thread_id:
         if len(st.session_state["chat_thread"]) > 0:
             st.session_state["thread_id"] = st.session_state["chat_thread"][0]
         else:
-            new_id = genrate_id()
+            new_id = generate_id()
             st.session_state["thread_id"] = new_id
             st.session_state["chat_thread"] = [new_id]
-            st.session_state["chat_histories"][new_id] = []
 
 
 # -----------------------
 # Page UI
 # -----------------------
 st.set_page_config(
-    page_title="AI Chat Assistant",
+    page_title="Course-Connect:Site-Bot",
     page_icon="🤖",
     layout="centered"
 )
 
-st.title("🤖 AI Chat Assistant")
-st.caption("Powered by LangGraph + Streamlit")
+st.title("SITE-BOT ASSISTANT")
+st.caption("Powered by Sachin")
 
 
 # -----------------------
 # Session State Init
 # -----------------------
-if "chat_histories" not in st.session_state:
-    st.session_state["chat_histories"] = {}
-
 if "thread_id" not in st.session_state:
-    st.session_state["thread_id"] = genrate_id()
+    st.session_state["thread_id"] = generate_id()
 
 if "chat_thread" not in st.session_state:
-    st.session_state["chat_thread"] = []
-
-# ensure history exists
-if st.session_state["thread_id"] not in st.session_state["chat_histories"]:
-    st.session_state["chat_histories"][st.session_state["thread_id"]] = []
+    st.session_state["chat_thread"] = retrieve_all_thread()
 
 add_thread(st.session_state["thread_id"])
 
@@ -91,23 +75,23 @@ with st.sidebar:
     st.header("Conversation")
 
     for tid in list(st.session_state["chat_thread"]):
-        col1, col2 = st.columns([4,1])
+        col1, col2 = st.columns([4, 1])
 
         # open chat
-        if col1.button(tid[:8], key=f"open_{tid}"):
+        if col1.button(tid[:15], key=f"open_{tid}"):
             st.session_state["thread_id"] = tid
             st.rerun()
 
-        # delete chat
+        # delete chat (UI only)
         if col2.button("🗑", key=f"del_{tid}"):
-            delete_thread(tid)
+            delete_thread_local(tid)
             st.rerun()
 
 
 # -----------------------
-# Show chat history
+# Load Chat History FROM SQLITE
 # -----------------------
-current_history = st.session_state["chat_histories"][st.session_state["thread_id"]]
+current_history = load_chat_history(st.session_state["thread_id"])
 
 for message in current_history:
     with st.chat_message(message["role"]):
@@ -120,16 +104,15 @@ for message in current_history:
 user_input = st.chat_input("Type your message here...")
 
 if user_input:
-    # save user message
-    current_history.append({"role": "user", "content": user_input})
 
-    # move active chat to top (recent first)
+    # show user immediately
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # move active chat to top
     if st.session_state["thread_id"] in st.session_state["chat_thread"]:
         st.session_state["chat_thread"].remove(st.session_state["thread_id"])
         st.session_state["chat_thread"].insert(0, st.session_state["thread_id"])
-
-    with st.chat_message("user"):
-        st.markdown(user_input)
 
     config = {
         "configurable": {
@@ -154,7 +137,4 @@ if user_input:
         with st.spinner("Thinking... 🤔"):
             st.write_stream(stream_response)
 
-    ai_reply = "".join(ai_reply_parts)
-
-    # save assistant message
-    current_history.append({"role": "assistant", "content": ai_reply})
+    # No manual saving needed — LangGraph checkpoint handles persistence
