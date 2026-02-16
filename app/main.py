@@ -5,6 +5,8 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, START, END
 from langchain.chat_models import init_chat_model
+from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_community.tools import DuckDuckGoSearchRun 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 import sqlite3
@@ -24,7 +26,19 @@ llm = init_chat_model(
     
 )
 
+search_tool = DuckDuckGoSearchRun()
+
+tools = [search_tool]
+
+llm = llm.bind_tools(tools=tools)
+
+tool_node = ToolNode(tools=tools)
+
 def chat_node(state:State):
+    """It may answer the question or it can tool call
+    if you are getting response from tools you have to 
+    structure the answer and make it more readable.
+    """
     messages = state['messages']
     response = llm.invoke(messages)
     return {'messages':[response]}
@@ -34,9 +48,11 @@ checkpointer = SqliteSaver(conn=conn)
 
 graph_builder = StateGraph(State)
 graph_builder.add_node('chat_node', chat_node)
+graph_builder.add_node('tools', tool_node)
 
 graph_builder.add_edge(START, 'chat_node')
-graph_builder.add_edge('chat_node', END)
+graph_builder.add_conditional_edges('chat_node', tools_condition)
+graph_builder.add_edge('tools', 'chat_node')
 
 
 

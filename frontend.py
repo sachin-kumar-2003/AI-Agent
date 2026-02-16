@@ -1,6 +1,6 @@
 import streamlit as st
 import uuid
-from langchain.messages import HumanMessage
+from langchain.messages import HumanMessage, AIMessage
 from app.main import graph, retrieve_all_thread, load_chat_history
 
 
@@ -78,7 +78,7 @@ with st.sidebar:
         col1, col2 = st.columns([4, 1])
 
         # open chat
-        if col1.button(tid[:15], key=f"open_{tid}"):
+        if col1.button(tid[:22], key=f"open_{tid}"):
             st.session_state["thread_id"] = tid
             st.rerun()
 
@@ -130,11 +130,12 @@ if user_input:
                 config=config,
                 stream_mode="messages"
             ):
-                token = message_chunk.content
-                ai_reply_parts.append(token)
-                yield token
+                if isinstance(message_chunk, AIMessage):
+                    token = message_chunk.content
+                    ai_reply_parts.append(token)
+                    yield token
 
-        with st.spinner("Thinking... 🤔"):
-            st.write_stream(stream_response)
+        
+        st.write_stream(stream_response)
 
     # No manual saving needed — LangGraph checkpoint handles persistence
