@@ -1,7 +1,7 @@
 import streamlit as st
 import uuid
 from langchain.messages import HumanMessage, AIMessage
-from app.main import graph, retrieve_all_thread, load_chat_history
+from app.main import graph, retrieve_all_thread, load_chat_history, delete_thread
 
 
 # -----------------------
@@ -84,6 +84,7 @@ with st.sidebar:
 
         # delete chat (UI only)
         if col2.button("🗑", key=f"del_{tid}"):
+            delete_thread(tid)
             delete_thread_local(tid)
             st.rerun()
 

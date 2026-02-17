@@ -88,3 +88,10 @@ def load_chat_history(thread_id):
             history.append({"role": "assistant", "content": msg.content})
 
     return history
+
+
+def delete_thread(thread_id: str) -> None:
+    """Delete a thread from LangGraph SQLite checkpoint storage."""
+    with conn:
+        conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
+        conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
