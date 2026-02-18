@@ -12,6 +12,8 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 import sqlite3
 from dotenv import load_dotenv
 
+from .qdrant_retreival import main
+
 load_dotenv()
 
 api_key = os.getenv("OPEN_ROUTER_KEY")
@@ -28,21 +30,25 @@ llm = init_chat_model(
 )
 
 search_tool = DuckDuckGoSearchRun()
+def search_database():
+    """this tool find out the course such as mca , mba from the database when user is willing to know about the course"""
+    return main()
 
-tools = [search_tool]
+tools = [search_tool, search_database]
 
 llm = llm.bind_tools(tools=tools)
 
 tool_node = ToolNode(tools=tools)
 
 def chat_node(state:State):
-    """It may answer the question or it can tool call
+    """It may answer the question or it can tool call if someone search about courses such as mba mca so there is tool which is search_database
     if you are getting response from tools you have to 
     structure the answer and make it more readable.
     """
     messages = state['messages']
     response = llm.invoke(messages)
     return {'messages':[response]}
+
 
 conn = sqlite3.connect(database="chatbot.db", check_same_thread=False)
 checkpointer = SqliteSaver(conn=conn)

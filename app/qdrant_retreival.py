@@ -31,11 +31,11 @@ def _load_config() -> tuple[str, str, str, str]:
 
 
 
-def main() -> None:
+def main(query :str) -> None:
     model = TextEmbedding('BAAI/bge-small-en-v1.5')
     qdrant_url, qdrant_api_key, openrouter_api_key, gemini_api_key = _load_config()
     
-    query = input("ask something - > ")
+    # query = input("ask something - > ")
     query_vector = next(iter(model.embed(query)))
     
     client = QdrantClient(
@@ -59,8 +59,6 @@ def main() -> None:
     
     SYSTEM_PROMPT = """
         you are AI assistant you task is to give the user query answer if it is related to the any academic courses
-        if the question is not related to the  course so response with : sorry.. ask i am not able to help with that
-        if some one is doing simple conversation chat so you can freely do.
     """
     response = openai_client.chat.completions.create(
         model="openrouter/free",
@@ -76,9 +74,4 @@ def main() -> None:
         ]
     )
 
-    print(response.choices[0].message.content)
-
-
-if __name__ == "__main__":
-    main()
-   
+    return response.choices[0].message.content
