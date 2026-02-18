@@ -30,9 +30,11 @@ llm = init_chat_model(
 )
 
 search_tool = DuckDuckGoSearchRun()
-def search_database():
+def search_database(state:State):
     """this tool find out the course such as mca , mba from the database when user is willing to know about the course"""
-    return main()
+    user_query = state["messages"][-1].content
+    print(str(user_query))
+    return main(user_query)
 
 tools = [search_tool, search_database]
 
