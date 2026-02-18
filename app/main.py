@@ -15,11 +15,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv("OPEN_ROUTER_KEY")
+model_name = os.getenv("MODEL_NAME")
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages] 
     
 llm = init_chat_model(
-    model="openrouter/free",
+    model=model_name,
     model_provider="openai",
     api_key=api_key,
     base_url="https://openrouter.ai/api/v1",

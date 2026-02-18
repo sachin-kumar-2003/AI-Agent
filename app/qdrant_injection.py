@@ -1,0 +1,64 @@
+import os
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams
+from qdrant_client.models import PointStruct
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from fastembed import TextEmbedding
+from dotenv import load_dotenv
+from .uploading import data
+import json
+import uuid
+
+load_dotenv()
+
+qdrant_url = os.getenv("QDRANT_URL")
+qdrant_api_key = os.getenv("QDRANT_API_KEY")
+
+client = QdrantClient(
+    url=qdrant_url,
+    api_key=qdrant_api_key,
+)
+def client_qdrant():
+    return client
+
+client.create_collection(
+    collection_name="items",
+    vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+)
+
+model = TextEmbedding('BAAI/bge-small-en-v1.5')
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+parsed_data = json.loads(data)
+courses = parsed_data["MBA_Courses"]
+texts = [
+    f"""
+    University: {course['University']}.
+    Course: {course['Course']}.
+    Specialization: {course['Specialization']}.
+    Duration: {course['Duration']}.
+    Average Salary: {course['AvgSalary']}.
+    """
+    for course in courses
+]
+embeddings = model.embed(texts)
+
+points = []
+for course, embedding in zip(courses, embeddings):
+    point = PointStruct(
+        id=str(uuid.uuid4()),  
+        vector=embedding.tolist(),
+        payload={
+            "university": course["University"],
+            "course": course["Course"],
+            "specialization": course["Specialization"],
+            "duration": course["Duration"],
+            "avg_salary": course["AvgSalary"],
+            "url": course["URL"]
+        }
+    )
+    points.append(point)
+client.upsert(
+  collection_name="items",
+  points=points,
+)
+print("inject succesfull..")
