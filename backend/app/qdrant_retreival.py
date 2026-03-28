@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 import os
 
 
-
-
 def _load_config() -> tuple[str, str, str, str]:
     load_dotenv()
 
@@ -58,7 +56,7 @@ def main(query :str) -> None:
         text += str(point.payload)
     
     SYSTEM_PROMPT = """
-        you are AI assistant you task is to give the user query answer if it is related to the any academic courses
+        you are AI assistant you task is to give the user query answer if it is related to the any academic courses. 
     """
     response = openai_client.chat.completions.create(
         model="openrouter/free",
