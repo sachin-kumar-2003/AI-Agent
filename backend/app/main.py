@@ -12,6 +12,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 import sqlite3
 from dotenv import load_dotenv
 
+
 from .qdrant_retreival import main
 
 load_dotenv()
@@ -29,21 +30,34 @@ llm = init_chat_model(
     
 )
 
-search_tool = DuckDuckGoSearchRun()
+# search_tool = DuckDuckGoSearchRun()
 def search_database(state:State):
-    """this tool find out the course such as mca , mba from the database when user is willing to know about the course"""
+    """This tool is used to search the database for courses based on the user's query. It retrieves the latest user query from the state and passes it to the main function, which performs a search in the Qdrant vector database and returns relevant course information. if there is related url provide that too
+    example user query - > what are the courses available ?
+    output: 
+    here are the list of courses available :
+    list of courses
+    if there is any url related to the courses provide that too.
+    
+    example user query - > what are the courses available in mba ?
+    output:
+    here are the list of courses available in mba :
+    list of courses that are related to the mba field
+    if there is any url related to the courses provide that too.    
+    """
     user_query = state["messages"][-1].content
     print(str(user_query))
     return main(user_query)
 
-tools = [search_tool, search_database]
+# tools = [search_tool, search_database]
+tools = [search_database]
 
 llm = llm.bind_tools(tools=tools)
 
 tool_node = ToolNode(tools=tools)
 
 def chat_node(state:State):
-    """It may answer the question or it can tool call if someone search about courses such as mba mca so there is tool which is search_database
+    """It may answer the question or it can tool call if someone search about courses such as mba mca or any other courses so there is tool which is search_database
     if you are getting response from tools you have to 
     structure the answer and make it more readable.
     """
@@ -68,6 +82,8 @@ graph_builder.add_edge('tools', 'chat_node')
 
 graph = graph_builder.compile(checkpointer=checkpointer)
 
+
+
 def retrieve_all_thread():
     all_threads = set()
     for checkpoint in checkpointer.list(None):
@@ -85,6 +101,7 @@ def retrieve_all_thread():
 def load_chat_history(thread_id):
     config = {"configurable": {"thread_id": thread_id}}
     state = graph.get_state(config)
+    print(state)
 
     if not state or "messages" not in state.values:
         return []
@@ -104,3 +121,4 @@ def delete_thread(thread_id: str) -> None:
     with conn:
         conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
         conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
+        return "Thread deleted successfully"

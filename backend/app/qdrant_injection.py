@@ -31,29 +31,31 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
 parsed_data = json.loads(data)
 courses = parsed_data["MBA_Courses"]
 texts = [
-    f"""
-    University: {course['University']}.
-    Course: {course['Course']}.
-    Specialization: {course['Specialization']}.
-    Duration: {course['Duration']}.
-    Average Salary: {course['AvgSalary']}.
-    """
-    for course in courses
+    f"University: {c['university']}. "
+    f"Course: {c['course_name']}. "
+    f"Category: {c['category']}. "
+    f"Duration: {c['duration']}. "
+    f"Average Salary: {c['avg_salary']}. "
+    f"Description: {c['description']}. "
+    f"Program URL: {c['program_url']}."
+    for c in courses
 ]
 embeddings = model.embed(texts)
 
 points = []
 for course, embedding in zip(courses, embeddings):
     point = PointStruct(
-        id=str(uuid.uuid4()),  
+        id=str(uuid.uuid4()),
         vector=embedding.tolist(),
         payload={
-            "university": course["University"],
-            "course": course["Course"],
-            "specialization": course["Specialization"],
-            "duration": course["Duration"],
-            "avg_salary": course["AvgSalary"],
-            "url": course["URL"]
+            "university": course["university"],
+            "course_name": course["course_name"],
+            "category": course["category"],
+            "duration": course["duration"],
+            "avg_salary": course["avg_salary"],
+            "description": course["description"],
+            "program_url": course["program_url"],
+            "text": f"{course['course_name']} at {course['university']} specializing in {course['category']}."
         }
     )
     points.append(point)
