@@ -17,6 +17,8 @@ import {
 import Sidebar from "../components/Sidebar";
 import { delete_thread, get_chat, get_thread } from "../services/api.js";
 import useDarkMode from "../hooks/useDarkMode";
+const backend_url = import.meta.env.VITE_BACKEND_URL;
+console.log("Backend URL:", backend_url);
 
 export default function Home() {
   const [isDark, toggleDark] = useDarkMode();
@@ -72,7 +74,7 @@ export default function Home() {
       { role: "assistant", content: "Typing..." },
     ]);
 
-    const response = await fetch("http://localhost:8000/chat", {
+    const response = await fetch(`${backend_url}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, MessageSquare, Pencil, Check } from "lucide-react";
 
 const TITLES_STORAGE_KEY = "sidebar-chat-titles";
+const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 export default function Sidebar({
   threads,
