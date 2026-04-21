@@ -101,6 +101,7 @@ def retrieve_all_thread():
 def load_chat_history(thread_id):
     config = {"configurable": {"thread_id": thread_id}}
     state = graph.get_state(config)
+    print(state)
 
     if not state or "messages" not in state.values:
         return []

@@ -33,6 +33,11 @@ def get_chat(thread_id: str):
     history = load_chat_history(thread_id)
     return {"history": history}
 
+@app.post("/thread/rename")
+def rename_thread(thread_id: str, new_name: str):
+    all_thread = retrieve_all_thread()
+    
+
 @app.delete("/thread/delete/{thread_id}")
 def delete_thread_api(thread_id: str):
     all_threads = retrieve_all_thread()
