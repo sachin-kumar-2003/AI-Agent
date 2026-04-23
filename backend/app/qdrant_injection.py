@@ -3,7 +3,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.models import PointStruct
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from fastembed import TextEmbedding
+# from fastembed import TextEmbedding
 from dotenv import load_dotenv
 from .uploading import data
 import json
