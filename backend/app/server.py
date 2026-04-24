@@ -10,6 +10,8 @@ origins = [
     "https://localhost.tiangolo.com",
     "http://localhost:5173",
     "http://localhost:8080",
+    "https://ai-agent-teal-chi.vercel.app/",
+    "https://ai-agent-teal-chi.vercel.app"
 ]
 app.add_middleware(
     CORSMiddleware,
