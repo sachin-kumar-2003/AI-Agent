@@ -1,6 +1,23 @@
-import axios from 'axios';
-const base_url = import.meta.env.VITE_BACKEND_URL;
+import axios from "axios";
 
-export const get_thread =()=> axios.get(`${base_url}/threads`);
-export const get_chat =(chat_id)=> axios.get(`${base_url}/chat/${chat_id}`);
-export const delete_thread =(thread_id)=> axios.delete(`${base_url}/thread/delete/${thread_id}`);
+const baseURL = import.meta.env.VITE_BACKEND_URL;
+
+// Create a reusable axios instance
+const api = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const getThreads = () => api.get("/threads");
+
+export const getChat = (chatId) => {
+  if (!chatId) throw new Error("chatId is required");
+  return api.get(`/chat/${chatId}`);
+};
+
+export const deleteThread = (threadId) => {
+  if (!threadId) throw new Error("threadId is required");
+  return api.delete(`/thread/delete/${threadId}`);
+};
