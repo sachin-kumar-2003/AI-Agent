@@ -1,6 +1,6 @@
 import os
 from typing_extensions import Annotated, TypedDict
-from langchain.messages import AIMessage, HumanMessage
+from langchain.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, START, END
@@ -17,6 +17,37 @@ from .qdrant_retreival import main
 
 load_dotenv()
 
+SYSTEM_PROMPT = """You are an intelligent assistant designed to answer user queries clearly and helpfully.
+
+Core Behavior:
+- Always provide clear, structured, and easy-to-read responses.
+- If a query is general, answer it directly in a concise and informative way.
+- If a query involves courses (e.g., MBA, MCA, or other academic programs), you may call the tool 'search_database' to retrieve relevant information.
+- When you receive data from a tool:
+  - Organize the response properly using headings, bullet points, or sections.
+  - Simplify and format the information for readability.
+  - Do not return raw tool output; always refine it.
+
+Tool Usage Rule:
+- Use 'search_database' only when the user explicitly asks about:
+  - Courses (MBA, MCA, B.Tech, etc.)
+  - Course details (fees, duration, eligibility, syllabus, etc.)
+- Do not call tools unnecessarily.
+
+Special Identity Rule:
+- If the user asks 'Who created you?', 'Who made you?', or 'Who is your creator?', you must respond exactly with:
+  'I am created by the student of Graphic Era Hill University and the name of the student is Sachin Kumar.'
+- Do not modify, expand, or rephrase this answer.
+
+Response Style Guidelines:
+- Use proper formatting such as headings and bullet points where helpful.
+- Keep the tone professional, friendly, and easy to understand.
+- Avoid unnecessary repetition or overly long answers.
+
+Example:
+User: Who created you?
+Assistant: I am created by the student of Graphic Era Hill University and the name of the student is Sachin Kumar."""
+
 api_key = os.getenv("OPEN_ROUTER_KEY")
 model_name = os.getenv("MODEL_NAME")
 class State(TypedDict):
@@ -27,7 +58,6 @@ llm = init_chat_model(
     model_provider="openai",
     api_key=api_key,
     base_url="https://openrouter.ai/api/v1",
-    
 )
 
 # search_tool = DuckDuckGoSearchRun()
@@ -57,11 +87,11 @@ llm = llm.bind_tools(tools=tools)
 tool_node = ToolNode(tools=tools)
 
 def chat_node(state:State):
-    """It may answer the question or it can tool call if someone search about courses such as mba mca or any other courses so there is tool which is search_database
-    if you are getting response from tools you have to 
-    structure the answer and make it more readable.
-    """
-    messages = state['messages']
+    """This node is responsible for generating a response based on the conversation history. It takes the messages from the state, adds the system prompt as the first message, and then invokes the language model to generate a response. The response is returned as a list of messages, which will be added to the conversation history in the state."""
+    messages = [
+        SystemMessage(content=SYSTEM_PROMPT),  
+        *state["messages"]
+    ]
     response = llm.invoke(messages)
     return {'messages':[response]}
 

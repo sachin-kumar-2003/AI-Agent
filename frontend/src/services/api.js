@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const base_url = import.meta.env.VITE_BACKEND_URL;
 
 export const get_thread =()=> axios.get(`${base_url}/threads`);
