@@ -10,14 +10,14 @@ const api = axios.create({
   },
 });
 
-export const getThreads = () => api.get("/threads");
+export const get_thread = () => api.get("/threads");
 
-export const getChat = (chatId) => {
+export const get_chat = (chatId) => {
   if (!chatId) throw new Error("chatId is required");
   return api.get(`/chat/${chatId}`);
 };
 
-export const deleteThread = (threadId) => {
+export const delete_thread = (threadId) => {
   if (!threadId) throw new Error("threadId is required");
   return api.delete(`/thread/delete/${threadId}`);
 };
