@@ -282,7 +282,7 @@ export default function Home() {
                           msg.role === "user"
                             ? "prose-invert"
                             : "prose-slate dark:prose-invert"
-                        } prose-pre:bg-transparent prose-pre:p-0 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-table:block prose-table:overflow-x-auto`}
+                        } prose-pre:bg-transparent prose-pre:p-0 prose-code:rounded prose-code:px-1 prose-code:py-0.5`}
                       >
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
@@ -296,7 +296,7 @@ export default function Home() {
 
                               if (!isInline && match) {
                                 return (
-                                  <div className="overflow-hidden rounded-2xl border border-slate-700">
+                                  <div className="overflow-hidden rounded-2xl border border-slate-700 my-3">
                                     <div className="flex items-center justify-between bg-slate-900 px-4 py-2 text-xs text-slate-300">
                                       <span className="font-medium uppercase tracking-[0.18em]">
                                         {match[1]}
@@ -332,7 +332,7 @@ export default function Home() {
 
                               return (
                                 <code
-                                  className={`rounded px-1.5 py-0.5 ${
+                                  className={`rounded px-1.5 py-0.5 font-semibold ${
                                     msg.role === "user"
                                       ? "bg-white/15 text-white"
                                       : "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200"
@@ -342,6 +342,82 @@ export default function Home() {
                                   {children}
                                 </code>
                               );
+                            },
+                            table({ children }) {
+                              return (
+                                <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-md">
+                                  <table className="w-full text-sm">
+                                    {children}
+                                  </table>
+                                </div>
+                              );
+                            },
+                            thead({ children }) {
+                              return (
+                                <thead className="bg-slate-100 dark:bg-slate-700 border-b-2 border-slate-300 dark:border-slate-600">
+                                  {children}
+                                </thead>
+                              );
+                            },
+                            tbody({ children }) {
+                              return <tbody className="divide-y divide-slate-200 dark:divide-slate-700">{children}</tbody>;
+                            },
+                            tr({ children }) {
+                              return <tr className="hover:bg-slate-50 dark:hover:bg-slate-800 transition">{children}</tr>;
+                            },
+                            th({ children }) {
+                              return (
+                                <th className="px-4 py-3 text-left font-semibold text-slate-900 dark:text-slate-100 first:pl-4 last:pr-4">
+                                  {children}
+                                </th>
+                              );
+                            },
+                            td({ children }) {
+                              return (
+                                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300 first:pl-4 last:pr-4 break-words">
+                                  {children}
+                                </td>
+                              );
+                            },
+                            a({ href, children }) {
+                              return (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 dark:text-blue-400 font-semibold hover:underline transition underline-offset-2 decoration-blue-300 dark:decoration-blue-600"
+                                >
+                                  {children}
+                                </a>
+                              );
+                            },
+                            blockquote({ children }) {
+                              return (
+                                <blockquote className="my-3 border-l-4 border-blue-500 bg-slate-50 dark:bg-slate-800 pl-4 py-2 pr-3 rounded-r-lg italic text-slate-700 dark:text-slate-300">
+                                  {children}
+                                </blockquote>
+                              );
+                            },
+                            h1({ children }) {
+                              return <h1 className="text-2xl font-bold mt-4 mb-2 text-slate-900 dark:text-slate-100">{children}</h1>;
+                            },
+                            h2({ children }) {
+                              return <h2 className="text-xl font-bold mt-3 mb-2 text-slate-900 dark:text-slate-100">{children}</h2>;
+                            },
+                            h3({ children }) {
+                              return <h3 className="text-lg font-bold mt-3 mb-1.5 text-slate-900 dark:text-slate-100">{children}</h3>;
+                            },
+                            ol({ children }) {
+                              return <ol className="list-decimal list-inside space-y-1.5 my-2 text-slate-700 dark:text-slate-300">{children}</ol>;
+                            },
+                            ul({ children }) {
+                              return <ul className="list-disc list-inside space-y-1.5 my-2 text-slate-700 dark:text-slate-300">{children}</ul>;
+                            },
+                            li({ children }) {
+                              return <li className="ml-2">{children}</li>;
+                            },
+                            p({ children }) {
+                              return <p className="my-2 leading-relaxed text-slate-700 dark:text-slate-300">{children}</p>;
                             },
                           }}
                         >
